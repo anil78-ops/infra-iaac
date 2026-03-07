@@ -71,7 +71,7 @@ jobs:
         with:
           role-to-assume: ${{ secrets.AWS_environments/dev_OIDC_ARN }}
           aws-region: ${{ secrets.AWS_environments/dev_REGION }}
-          role-session-name: aide-${{ matrix.env }}-${{ github.run_id }}
+          role-session-name: github-${{ matrix.env }}-${{ github.run_id }}
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
