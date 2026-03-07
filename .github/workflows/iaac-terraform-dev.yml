@@ -1,0 +1,133 @@
+name: terraform-environments/dev
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'environments/dev/**'
+  push:
+    branches: [ main ]
+    paths:
+      - 'environments/dev/**'
+  workflow_dispatch:
+    inputs:
+      env:
+        description: "Environment folder inside environments/dev/"
+        required: true
+        type: string
+
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+
+jobs:
+  detect-changes:
+    if: github.event_name != 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    outputs:
+      envs: ${{ steps.detect.outputs.envs }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect changed environments/dev folders
+        id: detect
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            DIFF=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
+          else
+            DIFF=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
+          fi
+
+          ENVS=$(echo "$DIFF" \
+            | grep '^environments/dev/' \
+            | cut -d/ -f2 \
+            | sort -u \
+            | jq -R -s -c 'split("\n")[:-1]')
+
+          echo "envs=$ENVS" >> "$GITHUB_OUTPUT"
+
+  terraform:
+    if: github.event_name != 'workflow_dispatch'
+    needs: detect-changes
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        env: ${{ fromJSON(needs.detect-changes.outputs.envs) }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_environments/dev_OIDC_ARN }}
+          aws-region: ${{ secrets.AWS_environments/dev_REGION }}
+          role-session-name: aide-${{ matrix.env }}-${{ github.run_id }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.5
+
+      - name: Terraform Init
+        working-directory: environments/dev/${{ matrix.env }}
+        run: terraform init -input=false
+
+      - name: Terraform Validate
+        if: github.event_name == 'pull_request'
+        working-directory: environments/dev/${{ matrix.env }}
+        run: |
+          terraform fmt -check
+          terraform validate
+
+      - name: Terraform Plan
+        if: github.event_name == 'pull_request'
+        working-directory: environments/dev/${{ matrix.env }}
+        run: terraform plan -input=false -no-color -out=tfplan
+
+      - name: Terraform Show
+        if: github.event_name == 'pull_request'
+        working-directory: environments/dev/${{ matrix.env }}
+        run: terraform show -no-color tfplan > plan.txt
+
+      - name: Terraform Apply
+        if: github.event_name == 'push'
+        working-directory: environments/dev/${{ matrix.env }}
+        run: terraform apply -input=false -auto-approve
+
+  terraform-destroy:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_environments/dev_OIDC_ARN }}
+          aws-region: ${{ secrets.AWS_environments/dev_REGION }}
+          role-session-name: destroy-${{ github.event.inputs.env }}-${{ github.run_id }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.5
+
+      - name: Terraform Init
+        working-directory: environments/dev/${{ github.event.inputs.env }}
+        run: terraform init -input=false
+
+      - name: Terraform Destroy
+        working-directory: environments/dev/${{ github.event.inputs.env }}
+        run: terraform destroy -input=false -auto-approve
