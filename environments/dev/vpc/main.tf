@@ -1,5 +1,5 @@
 module "vpc" {
-  source = "../../modules/vpc"
+  source = "../../../modules/vpc"
 
   project_name       = "my-iaac-vpc"
   environment        = "dev"
