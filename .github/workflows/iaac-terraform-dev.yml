@@ -69,8 +69,8 @@ jobs:
       - name: Configure AWS credentials via OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_environments/dev_OIDC_ARN }}
-          aws-region: ${{ secrets.AWS_environments/dev_REGION }}
+          role-to-assume: ${{ secrets.AWS_dev_OIDC_ARN }}
+          aws-region: ${{ secrets.AWS_dev_REGION }}
           role-session-name: github-${{ matrix.env }}-${{ github.run_id }}
 
       - name: Setup Terraform
@@ -115,8 +115,8 @@ jobs:
       - name: Configure AWS credentials via OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_environments/dev_OIDC_ARN }}
-          aws-region: ${{ secrets.AWS_environments/dev_REGION }}
+          role-to-assume: ${{ secrets.AWS_dev_OIDC_ARN }}
+          aws-region: ${{ secrets.AWS_dev_REGION }}
           role-session-name: destroy-${{ github.event.inputs.env }}-${{ github.run_id }}
 
       - name: Setup Terraform
