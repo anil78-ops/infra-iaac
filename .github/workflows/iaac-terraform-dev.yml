@@ -34,7 +34,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Detect changed environments/dev folders
+      - name: Detect changed dev folders
         id: detect
         shell: bash
         run: |
@@ -44,12 +44,16 @@ jobs:
             DIFF=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})
           fi
 
+          echo "Changed files:"
+          echo "$DIFF"
+
           ENVS=$(echo "$DIFF" \
             | grep '^environments/dev/' \
-            | cut -d/ -f2 \
+            | cut -d/ -f3 \
             | sort -u \
             | jq -R -s -c 'split("\n")[:-1]')
 
+          echo "Detected modules: $ENVS"
           echo "envs=$ENVS" >> "$GITHUB_OUTPUT"
 
   terraform:
