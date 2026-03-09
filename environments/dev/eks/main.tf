@@ -56,6 +56,7 @@ module "eks" {
   team        = "devops"
 
   cluster_admin_role_arns = [
-    "arn:aws:iam::303670280087:root"
+    "arn:aws:iam::303670280087:root",
+    "arn:aws:iam::303670280087:role/githubactions_oidc_role"
   ]
 }
