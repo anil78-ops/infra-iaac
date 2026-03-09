@@ -1,19 +1,19 @@
-# Terraform Infrastructure as Code (IaC)
+# 🚀 Terraform Infrastructure as Code (IaC)
 
-This repository contains **Terraform Infrastructure as Code (IaC)** used to provision and manage AWS infrastructure using reusable modules and automated CI/CD pipelines.
+This repository contains **Terraform Infrastructure as Code (IaC)** used to provision and manage AWS infrastructure using **modular Terraform architecture** and **automated GitHub Actions pipelines**.
 
-Infrastructure changes are automatically validated, planned, and applied using **GitHub Actions**.
+Infrastructure changes are validated, planned, and deployed automatically through **CI/CD pipelines**.
 
 ---
 
-# Repository Structure
+# 📦 Repository Structure
 
 ```
 infra-iaac
 │
 ├── .github
 │   └── workflows
-│       └── iaac-terraform-dev.yml   # Terraform CI/CD workflow
+│       └── iaac-terraform-dev.yml
 │
 ├── environments
 │   └── dev
@@ -32,33 +32,35 @@ infra-iaac
 
 ---
 
-# Architecture Overview
+# 🏗️ Architecture
 
-This project follows a **modular Terraform architecture**.
+This repository follows a **modular infrastructure architecture**.
 
-### Modules Layer
+```
+Modules  →  Environments  →  CI/CD Deployment
+```
 
-Reusable infrastructure modules:
+### 📚 Modules
 
-* **VPC** – Networking infrastructure
-* **EKS** – Kubernetes cluster
-* **ECR** – Container registry
+Reusable Terraform modules:
 
-These modules are reusable across environments.
+| Module     | Description               |
+| ---------- | ------------------------- |
+| 🌐 **VPC** | Networking infrastructure |
+| ☸️ **EKS** | Kubernetes cluster        |
+| 📦 **ECR** | Container image registry  |
 
 ---
 
-### Environment Layer
+# 🌍 Environments
 
-Environment-specific infrastructure definitions.
+Infrastructure is organized by environment.
 
 Example:
 
 ```
 environments/dev
 ```
-
-Each environment calls the shared modules and provides environment-specific configuration.
 
 Future environments may include:
 
@@ -67,54 +69,55 @@ environments/staging
 environments/prod
 ```
 
+Each environment calls reusable Terraform modules.
+
 ---
 
-# Infrastructure Components
+# ☁️ Infrastructure Components
 
-## VPC
+## 🌐 VPC
 
-Creates the base networking infrastructure:
+Creates networking infrastructure:
 
 * VPC
-* Public subnets
-* Private subnets
+* Public Subnets
+* Private Subnets
 * Internet Gateway
 * NAT Gateway
-* Route tables
+* Route Tables
 
 ---
 
-## EKS
+## ☸️ EKS
 
-Creates an **Amazon EKS cluster** including:
+Creates **Amazon Elastic Kubernetes Service (EKS)** cluster including:
 
-* EKS control plane
-* Managed node groups
-* IAM roles
-* Security groups
-* Kubernetes networking
-
----
-
-## ECR
-
-Creates **Amazon Elastic Container Registry (ECR)** repositories used to store Docker images deployed to EKS.
+* EKS Control Plane
+* Managed Node Groups
+* IAM Roles
+* Security Groups
 
 ---
 
-# CI/CD Pipeline (GitHub Actions)
+## 📦 ECR
 
-Terraform deployments are automated using **GitHub Actions**.
+Creates **Amazon Elastic Container Registry (ECR)** repositories for container images used by applications deployed to Kubernetes.
+
+---
+
+# ⚙️ CI/CD Pipeline
+
+Infrastructure deployments are automated using **GitHub Actions**.
 
 Workflow file:
 
 ```
-.github/workflows/terraform-environments-dev.yml
+.github/workflows/iaac-terraform-dev.yml
 ```
 
-The pipeline automatically detects which Terraform environment folders changed and runs Terraform only for those components.
+The pipeline automatically detects changed Terraform modules and runs Terraform only for those components.
 
-Example folders monitored:
+Example monitored folders:
 
 ```
 environments/dev/vpc
@@ -124,13 +127,11 @@ environments/dev/ecr
 
 ---
 
-# Pipeline Triggers
+# 🔄 Pipeline Workflow
 
-The workflow runs in three scenarios.
+## 🟡 Pull Request (Terraform Plan)
 
-## 1. Pull Request (Plan)
-
-When a PR modifies files under:
+When a Pull Request modifies:
 
 ```
 environments/dev/**
@@ -138,41 +139,48 @@ environments/dev/**
 
 The pipeline runs:
 
-* `terraform fmt`
-* `terraform validate`
-* `terraform plan`
+```
+terraform fmt
+terraform validate
+terraform plan
+```
 
-The Terraform plan is automatically **posted as a comment on the pull request**.
+The Terraform plan is automatically **posted as a comment on the Pull Request**.
 
-This allows reviewers to verify infrastructure changes before merging.
+Example workflow:
+
+```
+Developer → Pull Request → Terraform Plan → Review
+```
 
 ---
 
-## 2. Push to Main (Apply)
+## 🟢 Push to Main (Terraform Apply)
 
-When changes are merged into `main`, the pipeline:
-
-1. Detects modified dev modules
-2. Runs Terraform apply automatically
-
-Example:
+When a Pull Request is merged into `main`:
 
 ```
-PR → Review → Merge → Auto Deploy
+PR → Merge → Terraform Apply
 ```
 
-Only the changed infrastructure folders are applied.
+The pipeline:
+
+1. Detects changed modules
+2. Runs Terraform Apply
+3. Deploys infrastructure automatically
+
+Only modified modules are applied.
 
 ---
 
-## 3. Manual Destroy (Workflow Dispatch)
+## 🔴 Manual Destroy
 
-Infrastructure can be manually destroyed using the GitHub Actions UI.
+Infrastructure can be destroyed manually using **GitHub Actions Workflow Dispatch**.
 
-Workflow input:
+Required input:
 
 ```
-env: <module-name>
+env = <module-name>
 ```
 
 Example:
@@ -189,13 +197,11 @@ This runs:
 terraform destroy
 ```
 
-For the selected module.
-
 ---
 
-# Change Detection
+# 🔍 Change Detection
 
-The pipeline automatically detects which infrastructure modules changed.
+The pipeline automatically detects which modules changed.
 
 Example commit:
 
@@ -203,15 +209,19 @@ Example commit:
 environments/dev/vpc/main.tf
 ```
 
-Only the **vpc** module will run Terraform.
+Result:
 
-This significantly reduces pipeline runtime.
+```
+Terraform runs only for VPC
+```
+
+This keeps CI/CD pipelines **fast and efficient**.
 
 ---
 
-# AWS Authentication (OIDC)
+# 🔐 AWS Authentication (OIDC)
 
-The pipeline uses **GitHub OIDC authentication** to assume an AWS IAM role.
+The pipeline uses **GitHub OIDC authentication** to access AWS.
 
 No AWS credentials are stored in the repository.
 
@@ -229,18 +239,18 @@ GitHub Actions
       ↓
 OIDC Token
       ↓
-AWS IAM Role Assume
+AWS IAM Role
       ↓
 Temporary Credentials
 ```
 
-This is the recommended **secure DevOps practice**.
+This is the **recommended AWS security best practice**.
 
 ---
 
-# Terraform Workflow
+# 🛠 Terraform Local Workflow
 
-Typical local workflow for engineers:
+Developers can run Terraform locally.
 
 ### Initialize
 
@@ -268,30 +278,7 @@ terraform apply
 
 ---
 
-# Destroy Infrastructure
-
-To destroy infrastructure using GitHub Actions:
-
-1. Go to **Actions**
-2. Select the workflow
-3. Click **Run workflow**
-4. Provide environment name
-
-Example:
-
-```
-env: vpc
-```
-
-This will run:
-
-```
-terraform destroy
-```
-
----
-
-# Prerequisites
+# 📋 Prerequisites
 
 Required tools:
 
@@ -299,7 +286,7 @@ Required tools:
 * AWS CLI
 * Git
 
-Verify installations:
+Verify installation:
 
 ```
 terraform -v
@@ -308,36 +295,35 @@ aws --version
 
 ---
 
-# Security Best Practices
+# 🔒 Security Best Practices
 
-This repository follows modern DevOps security practices.
+This repository follows modern DevOps security standards:
 
-* AWS authentication via **OIDC**
-* No static AWS credentials
-* Terraform state encrypted
-* Infrastructure managed via pull requests
-* Infrastructure changes reviewed before deployment
+✔ AWS authentication via **OIDC**
+✔ No static AWS credentials
+✔ Infrastructure changes via **Pull Requests**
+✔ Automated Terraform validation
+✔ Controlled infrastructure deployments
 
 ---
 
-# DevOps Best Practices Implemented
+# 🧠 DevOps Best Practices Implemented
 
 ✔ Infrastructure as Code
 ✔ Modular Terraform architecture
 ✔ Environment separation
 ✔ Automated CI/CD pipelines
-✔ Secure AWS authentication (OIDC)
+✔ Secure AWS authentication
 ✔ PR-based infrastructure changes
-✔ Automatic Terraform plan comments
 
 ---
 
-# Maintainers
+# 👨‍💻 Maintainers
 
 DevOps / Platform Engineering Team
 
 ---
 
-# License
+# 📜 License
 
 Internal infrastructure automation project.
