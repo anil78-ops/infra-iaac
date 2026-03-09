@@ -1,4 +1,4 @@
-# Data source to get the state of the VPC stack.
+# Data source to get the state of the VPC stack
 data "terraform_remote_state" "vpc" {
   backend = "s3"
   config = {
