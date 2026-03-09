@@ -1,8 +1,8 @@
 # 🚀 Terraform Infrastructure as Code (IaC)
 
-This repository contains **Terraform Infrastructure as Code (IaC)** used to provision and manage AWS infrastructure using **modular Terraform architecture** and **automated GitHub Actions pipelines**.
+This repository contains **Terraform Infrastructure as Code (IaC)** used to provision and manage **AWS infrastructure** using a **modular Terraform architecture** and automated **GitHub Actions pipelines**.
 
-Infrastructure changes are validated, planned, and deployed automatically through **CI/CD pipelines**.
+Infrastructure changes are **validated, planned, and deployed automatically through CI/CD pipelines**.
 
 ---
 
@@ -40,15 +40,19 @@ This repository follows a **modular infrastructure architecture**.
 Modules  →  Environments  →  CI/CD Deployment
 ```
 
-### 📚 Modules
+Terraform modules are reusable and are called by environment-specific configurations.
+
+---
+
+# 📚 Modules
 
 Reusable Terraform modules:
 
-| Module     | Description               |
-| ---------- | ------------------------- |
-| 🌐 **VPC** | Networking infrastructure |
-| ☸️ **EKS** | Kubernetes cluster        |
-| 📦 **ECR** | Container image registry  |
+| Module | Description               |
+| ------ | ------------------------- |
+| 🌐 VPC | Networking infrastructure |
+| ☸️ EKS | Kubernetes cluster        |
+| 📦 ECR | Container image registry  |
 
 ---
 
@@ -105,6 +109,72 @@ Creates **Amazon Elastic Container Registry (ECR)** repositories for container i
 
 ---
 
+# 🌐 Kubernetes Application Routing (ALB Ingress)
+
+Applications deployed to the **EKS cluster** are exposed using **AWS Application Load Balancer (ALB) Ingress Controller**.
+
+The ingress routes external traffic to different microservices based on URL paths.
+
+Example Kubernetes Ingress configuration:
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: healthcare-ingress
+  namespace: dev
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /patients
+        pathType: Prefix
+        backend:
+          service:
+            name: patient-service
+            port:
+              number: 80
+
+      - path: /appointments
+        pathType: Prefix
+        backend:
+          service:
+            name: appointment-service
+            port:
+              number: 80
+
+      - path: /orders
+        pathType: Prefix
+        backend:
+          service:
+            name: order-service
+            port:
+              number: 80
+```
+
+### 🔀 Traffic Routing
+
+| Path            | Service             |
+| --------------- | ------------------- |
+| `/patients`     | patient-service     |
+| `/appointments` | appointment-service |
+| `/orders`       | order-service       |
+
+### 🌍 Load Balancer
+
+The **AWS ALB Ingress Controller** automatically:
+
+* Creates an **Application Load Balancer**
+* Configures **target groups**
+* Routes traffic to **Kubernetes services**
+
+---
+
 # ⚙️ CI/CD Pipeline
 
 Infrastructure deployments are automated using **GitHub Actions**.
@@ -145,7 +215,7 @@ terraform validate
 terraform plan
 ```
 
-The Terraform plan is automatically **posted as a comment on the Pull Request**.
+The **Terraform plan is automatically posted as a comment on the Pull Request**.
 
 Example workflow:
 
@@ -157,7 +227,7 @@ Developer → Pull Request → Terraform Plan → Review
 
 ## 🟢 Push to Main (Terraform Apply)
 
-When a Pull Request is merged into `main`:
+When a Pull Request is merged into **main**:
 
 ```
 PR → Merge → Terraform Apply
@@ -165,11 +235,11 @@ PR → Merge → Terraform Apply
 
 The pipeline:
 
-1. Detects changed modules
-2. Runs Terraform Apply
-3. Deploys infrastructure automatically
+* Detects changed modules
+* Runs `terraform apply`
+* Deploys infrastructure automatically
 
-Only modified modules are applied.
+Only **modified modules are applied**.
 
 ---
 
@@ -215,7 +285,7 @@ Result:
 Terraform runs only for VPC
 ```
 
-This keeps CI/CD pipelines **fast and efficient**.
+This keeps **CI/CD pipelines fast and efficient**.
 
 ---
 
@@ -297,11 +367,11 @@ aws --version
 
 # 🔒 Security Best Practices
 
-This repository follows modern DevOps security standards:
+This repository follows modern **DevOps security standards**:
 
-✔ AWS authentication via **OIDC**
+✔ AWS authentication via OIDC
 ✔ No static AWS credentials
-✔ Infrastructure changes via **Pull Requests**
+✔ Infrastructure changes via Pull Requests
 ✔ Automated Terraform validation
 ✔ Controlled infrastructure deployments
 
@@ -327,3 +397,5 @@ DevOps / Platform Engineering Team
 # 📜 License
 
 Internal infrastructure automation project.
+
+---
