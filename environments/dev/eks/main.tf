@@ -44,7 +44,7 @@ module "eks" {
   private_subnet_ids = data.terraform_remote_state.vpc.outputs.private_subnet_ids
   vpc_cidr           = data.terraform_remote_state.vpc.outputs.vpc_cidr_block
 
-  instance_type = "t3.micro"
+  instance_type = "t3.large"
 
   cluster_endpoint_private_access = true
   cluster_endpoint_public_access  = true
