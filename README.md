@@ -220,7 +220,7 @@ The **Terraform plan is automatically posted as a comment on the Pull Request**.
 Example workflow:
 
 ```
-Developer → Pull Request → Terraform Plan → Review
+DevOps-Person → Pull Request → Terraform Plan → Review
 ```
 
 ---
@@ -320,7 +320,7 @@ This is the **recommended AWS security best practice**.
 
 # 🛠 Terraform Local Workflow
 
-Developers can run Terraform locally.
+DevOps can run Terraform locally.
 
 ### Initialize
 
