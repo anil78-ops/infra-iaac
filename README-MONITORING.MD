@@ -377,7 +377,7 @@ sum(kube_pod_container_status_restarts_total) by (pod)
 
 # 🎯 Result
 
-After completing this setup, you will be able to monitor:
+After completing this setup, will be able to monitor:
 
 * 📊 Cluster CPU and memory usage
 * 🖥 Node health
